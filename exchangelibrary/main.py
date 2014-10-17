@@ -27,7 +27,7 @@ proto = SafeSlingerExchange()
 
 while True:
     try:
-        exchange_data = str(raw_input("Enter the string you want to exchange with people in the group: "))
+        exchange_data = str(raw_input("Enter a Secret you want to exchange with people in the group: "))
         if len(exchange_data) > 0: 
         	break
         else:
@@ -35,7 +35,7 @@ while True:
     except Exception:
     	print 'The exchange is missing required data.'
     
-print 'My Secretto Exchange: %s' % exchange_data	
+print 'My Secret to exchange: %s' % exchange_data	
 
 # select group size
 proto.SelecGroupSize()
@@ -45,9 +45,9 @@ proto.BeginExchange(exchange_data.encode('utf-8'))
 proto.AssignUser()
 # compare and enter the lowest number
 proto.SelectLowestNumber()
-# compute and display 3-words phrases
+# compute and display 3-word phrases
 proto.Compute3Wordphrases()
-# perform 3-words phrases verifications
+# perform 3-word phrase verifications
 ret = proto.PhrasesVerification()
 
 if ret == True: 
@@ -59,3 +59,4 @@ if ret == True:
 		print "User (%d)'s data: %s" % (x, _decrypted[x])
 	print "---------------------------------------------"
 del proto
+
