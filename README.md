@@ -31,12 +31,12 @@ Requirement:
 The python exchange program currently runs for python 2.x now.
 Since we leverage several cryptographic primitives, we require users to install pycrypto and pysha3.
 
-1. Install [pycrypto](https://pypi.python.org/pypi/pycrypto) for symmetric cryptography.
+## Install [pycrypto](https://pypi.python.org/pypi/pycrypto) for symmetric cryptography.
 - Download source tarball from the website, the newest verison is 2.6.1 now.
 - Untar the source and run **python setup.py build**.
 - Then run **python setup.py install** to install the library.
 
-2. Install [pysha3](https://pypi.python.org/pypi/pysha3/) for SHA3 hash library.
+## Install [pysha3](https://pypi.python.org/pypi/pysha3/) for SHA3 hash library.
 - Download source tarball from the website, the newest verison is 3.0.3 now.
 - Untar the source and run **python setup.py build**.
 - Then run **python setup.py install** to install the library.
