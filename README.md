@@ -1,9 +1,3 @@
-exchange-python-web
-===================
-
-Web based version of the SafeSlinger key exchange library in Python.
-
-
 SafeSlinger Python Client
 ===================
 The open source SafeSlinger Exchange library is a secure and easy to use method of exchanging public keys or other authentication data, with strong protection from Man-In-The-Middle (MITM) attacks. Our goal is to make exchanging public keys as simple as possible without sacrificing security. Our [research paper](http://sparrow.ece.cmu.edu/group/pub/farb_safeslinger_mobicom2013.pdf), presented at MobiCom '13, provides a technical analysis of SafeSlinger's key exchange properties.
@@ -53,3 +47,35 @@ Todo:
 
 1. Support python 3.x.
 2. Design customized UI for laptop environment.
+
+Contact
+=======
+
+* SafeSlinger [Project Website](http://www.cylab.cmu.edu/safeslinger)
+* Please submit [Bug Reports](http://github.com/SafeSlingerProject/exchange-python-web//issues)!
+* Looking for answers, try our [FAQ](http://www.cylab.cmu.edu/safeslinger/faq.html)!
+* Support: <safeslingerapp@gmail.com>
+
+License
+=======
+	The MIT License (MIT)
+
+	Copyright (c) 2010-2014 Carnegie Mellon University
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
