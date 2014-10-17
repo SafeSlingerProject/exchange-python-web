@@ -81,9 +81,9 @@ class SafeSlingerExchange:
     				self.num_users = numUsers
     				break
     			else:
-    				print "A minimum of %d members is required to exchange data." % 2
+    				print "A minimum of %d members are required to exchange data." % 2
     		except Exception:
-    			print "A minimum of %d members is required to exchange data." % 2
+    			print "A minimum of %d members are required to exchange data." % 2
     
     def BeginExchange(self, data):
     	self.match_nonce = bytearray(os.urandom(32))
@@ -102,7 +102,7 @@ class SafeSlingerExchange:
     	self.protocol_commitment = CryptoEngine.SHA3Digest(buffer)
     	# print "protocol_commitment = ", binascii.hexlify(protocol_commitment), "len = ", len(protocol_commitment)
     	del buffer
-    	# generate Diffie hellman Key
+    	# generate Diffie Hellman Key
     	self.dhkey = DiffieHellman()
     	self.dhpubkey = self.dhkey.getHexData(self.dhkey.publicKey).strip()
     	self.dhkey_len = len(self.dhpubkey)
@@ -139,11 +139,11 @@ class SafeSlingerExchange:
     			if low_num > 0: 
     				break
     			else:
-    				print 'Please neter a positive integer.'
+    				print 'Please enter a positive integer.'
     		except Exception:
-    			print 'Please neter a positive integer.'
+    			print 'Please enter a positive integer.'
     	
-    	print "%d users, Lowest %d\nWaiting for all users to join..." % (self.num_users, low_num)
+    	print "%d users, Lowest %d\nRequesting membership..." % (self.num_users, low_num)
     	numUsers_Recv = 1
     	self.uidSet[:] = []
     	self.uidSet.insert(0, self.userID)
@@ -165,16 +165,16 @@ class SafeSlingerExchange:
     				self.dataCommitmentSet[uid] = struct.unpack("%dB" %commitLen, datagram[offset:offset+commitLen])
     				offset += commitLen
     				numUsers_Recv += 1
-    				print "Recievd (%d/%d) Items" % (numUsers_Recv, self.num_users-1)
+    				print "Received (%d/%d) Items" % (numUsers_Recv, self.num_users-1)
     		retry += 1
     		time.sleep(retry)
     		if retry >= 10:
-    			print "Error: reach maximum retries.."
+    			print "Error: reached maximum retries”
     			quit()
     	self.SyncData()
     
     def SyncData(self):
-    	print "Waiting for gathering commitments ..."
+    	print "Waiting for all users to join..."
     	numUsers_Recv = 1
     	self.uidSet[:] = []
     	self.uidSet.insert(0, self.userID)
@@ -202,16 +202,16 @@ class SafeSlingerExchange:
     				self.receivedcipherSet[uid] = struct.unpack("%dB" % encrypted_len, datagram[offset:offset+encrypted_len])
     				offset += encrypted_len
     				numUsers_Recv += 1
-    				print "Recievd (%d/%d) Commitments" % (numUsers_Recv, self.num_users)
+    				print "Received (%d/%d) commitments" % (numUsers_Recv, self.num_users)
     		retry += 1
     		time.sleep(retry)
     		if retry >= 10:
-    			print "Error: reach maximum retries.."
+    			print "Error: reached maximum retries”
     			quit()
     
     
     def Compute3Wordphrases(self):
-    	#compute 3-word phrases, step1 compute hash
+    	#compute 3-word phrases, step 1 compute hash
     	total_len = 0
     	self.uidSet.sort()
     	buffer = bytearray()
@@ -238,7 +238,7 @@ class SafeSlingerExchange:
     	evenVec[ord(wordhash[2])] = True
     	
     	# essentially need to sort list of user ids first
-    	# generate wordlist for every user id upto ours
+    	# generate wordlist for every user id up to ours
     	# then generate our wordlist
     	count = 0
     	foundUser = False
@@ -271,7 +271,7 @@ class SafeSlingerExchange:
     			evenVec[hasharray[0+3*d]] = True
     			oddVec[hasharray[1+3*d]] = True
     			evenVec[hasharray[2+3*d]] = True     
-    			# computer decoy strings only if user is found
+    			# compute decoy strings only if user is found
     			if (d == 0) and (foundUser == True):
     				hashint[0] = hasharray[0]
     				hashint[1] = hasharray[1]
@@ -296,7 +296,7 @@ class SafeSlingerExchange:
     	numberlist_labels = []
     	hashbytes = bytearray(wordhash)
     	number = 0
-    	# numeric lables
+    	# numeric labels
     	for i in range(3):
     		numberstr = ''
     		if i == self.correct_index:
@@ -339,7 +339,7 @@ class SafeSlingerExchange:
     		print "[%d]: %s (%s)" % (i, wordlist_labels[i], numberlist_labels[i])
     	while True:
     		try:
-    			idx = int(raw_input("Eneter index to show your decision:"))
+    			idx = int(raw_input("Enter the index number to show your decision:"))
     			if idx <= 2 and idx >= -1 : 
     				self.selected_index = idx
     				break
@@ -347,7 +347,7 @@ class SafeSlingerExchange:
     				print 'Enter a correct index!'
     		except Exception:
     			print 'Not an integer number!'
-    	print "waiting for verification from all members..."
+    	print "Waiting for verification from all members..."
     
     def PhrasesVerification(self):
     	if self.selected_index == self.correct_index:
@@ -451,7 +451,7 @@ class SafeSlingerExchange:
     	sharedKey = None
     	
     	while currentKeyNodeNumber <= len(self.uidSet):
-    		#For the first keynode that you generate use your private key and keynode as public key*/
+    		#For the first keynode that you generate use your private key and keynode as public key
     		if firstKeynode:
     			pubKey = int(binascii.hexlify(self.keyNodes[currentKeyNodeNumber-1]), 16)
     			sharedKey = self.dhkey.genSecret(self.dhkey.privateKey, pubKey)
@@ -513,7 +513,7 @@ class SafeSlingerExchange:
     		retry += 1
     		time.sleep(retry)
     		if retry >= 10:
-    			print "Error: reach maximum retries.."
+    			print "Error: reached maximum retries”
     			quit()
     
     
@@ -557,3 +557,4 @@ class SafeSlingerExchange:
     	# load dictionary files
     	del self.odd_array
     	del self.even_array
+
