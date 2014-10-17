@@ -24,6 +24,7 @@ Requirement:
 
 The python exchange program currently runs for python 2.x now.
 Since we leverage several cryptographic primitives, we require users to install pycrypto and pysha3.
+We also use bitarray library to computate word phrases during verification.
 
 ## Install [pycrypto](https://pypi.python.org/pypi/pycrypto) for symmetric cryptography.
 - Download source tarball from the website, the newest verison is 2.6.1 now.
@@ -34,6 +35,10 @@ Since we leverage several cryptographic primitives, we require users to install 
 - Download source tarball from the website, the newest verison is 3.0.3 now.
 - Untar the source and run **python setup.py build**.
 - Then run **python setup.py install** to install the library.
+
+## Install [bitarray](https://pypi.python.org/pypi/bitarray/0.8.1) for BitArray library.
+- Download source tarball from the website, the newest verison is 0.8.1 now.
+- Untar the source and run **python setup.py install** to install the library.
 
 Run SafeSlinger Client:
 ========
