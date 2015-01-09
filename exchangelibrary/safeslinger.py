@@ -28,49 +28,48 @@ from httpsclient import HTTPClient
 from dh import DiffieHellman
 
 class SafeSlingerExchange:
-	
+    
     def __init__(self, address="slinger-dev.appspot.com"):
-    	# networking object
-    	self.version = 1 << 24 | 7 << 16
-    	self.address = address
-    	self.httpclient = None
-    	# predefined data structures
-    	self.match_nonce = None
-    	self.wrong_nonce = None
-    	self.match_extrahash = None
-    	self.match_hash = None
-    	self.encrypted_data = None
-    	self.protocol_commitment = None
-    	self.dhkey = None
-    	self.dhpubkey = None
-    	self.data_commitment = None
-    	self.num_users = 0
-    	self.userID = None
-    	self.correct_index = -1
-    	self.selected_index = -1
-    	self.dhkey_len = -1
-    	self.groupkey = None
-    	
-    	self.uidSet = []
-    	self.dataCommitmentSet = {}
-    	self.protoCommitmentSet = {}
-    	self.dhpubkeySet = {}
-    	self.receivedcipherSet = {}
-    	self.matchExtraHashSet = {}
-    	self.wrongHashSet = {}
-    	self.matchHashSet = {}
-    	self.keyNodes = {}
-    	self.matchNonceSet = {}
-    	# load dictionary files
-    	ins = open( "odd-dict.txt", "r" )
-    	self.odd_array = []
-    	for line in ins:
-    		self.odd_array.append( line.rstrip() )
-    	ins.close()
-    	ins = open( "even-dict.txt", "r" )
-    	self.even_array = []
-    	for line in ins:
-    		self.even_array.append( line.rstrip() )
+        # networking object
+        self.version = 1 << 24 | 8 << 16
+        self.address = address
+        self.httpclient = None
+        # predefined data structures
+        self.match_nonce = None
+        self.wrong_nonce = None
+        self.match_extrahash = None
+        self.match_hash = None
+        self.encrypted_data = None
+        self.protocol_commitment = None
+        self.dhkey = None
+        self.dhpubkey = None
+        self.data_commitment = None
+        self.num_users = 0
+        self.userID = None
+        self.correct_index = -1
+        self.selected_index = -1
+        self.dhkey_len = -1
+        self.groupkey = None
+        self.uidSet = []
+        self.dataCommitmentSet = {}
+        self.protoCommitmentSet = {}
+        self.dhpubkeySet = {}
+        self.receivedcipherSet = {}
+        self.matchExtraHashSet = {}
+        self.wrongHashSet = {}
+        self.matchHashSet = {}
+        self.keyNodes = {}
+        self.matchNonceSet = {}
+        # load dictionary files
+        ins = open( "odd-dict.txt", "r" )
+        self.odd_array = []
+        for line in ins:
+            self.odd_array.append( line.rstrip() )
+        ins.close()
+        ins = open( "even-dict.txt", "r" )
+        self.even_array = []
+        for line in ins:
+    	    self.even_array.append( line.rstrip() )
     	ins.close()
     
     def SelecGroupSize(self):
@@ -89,17 +88,17 @@ class SafeSlingerExchange:
     	self.match_nonce = bytearray(os.urandom(32))
     	self.wrong_nonce = bytearray(os.urandom(32))
     	# match_extrahash = sha3(match_nonce)
-    	self.match_extrahash = CryptoEngine.SHA3Digest(self.match_nonce)
+    	self.match_extrahash = CryptoEngine.sha3_digest(bytes(self.match_nonce))
     	# wrong_hash = sha3(wrong_nonce)
-    	self.wrong_hash = CryptoEngine.SHA3Digest(self.wrong_nonce)
+    	self.wrong_hash = CryptoEngine.sha3_digest(bytes(self.wrong_nonce))
     	# match_hash = sha3(match_extrahash)
-    	self.match_hash = CryptoEngine.SHA3Digest(self.match_extrahash)
+    	self.match_hash = CryptoEngine.sha3_digest(bytes(self.match_extrahash))
     	# encrypted_data = AES(enckey, exchange_data)
-    	self.encrypted_data = CryptoEngine.AES256EncryptWithKey(data, self.match_nonce)
+    	self.encrypted_data = CryptoEngine.aes256_cbc_encryption(data, self.match_nonce)
     	#compute protocol_commitment = sha3(match_hash||wrong_hash)
     	buffer = bytearray(self.match_hash)
     	buffer.extend(self.wrong_hash)
-    	self.protocol_commitment = CryptoEngine.SHA3Digest(buffer)
+    	self.protocol_commitment = CryptoEngine.sha3_digest(bytes(buffer))
     	# print "protocol_commitment = ", binascii.hexlify(protocol_commitment), "len = ", len(protocol_commitment)
     	del buffer
     	# generate Diffie Hellman Key
@@ -110,7 +109,7 @@ class SafeSlingerExchange:
     	buffer = bytearray(self.protocol_commitment)
     	buffer.extend(self.dhpubkey)
     	buffer.extend(self.encrypted_data)
-    	self.data_commitment = CryptoEngine.SHA3Digest(buffer)
+    	self.data_commitment = CryptoEngine.sha3_digest(bytes(buffer))
     	# print "data_commitment = ", binascii.hexlify(data_commitment), "len = ", len(data_commitment)
     	del buffer
     	# initialize network object
@@ -169,7 +168,7 @@ class SafeSlingerExchange:
     		retry += 1
     		time.sleep(retry)
     		if retry >= 10:
-    			print "Error: reached maximum retries”
+    			print "Error: reached maximum retries"
     			quit()
     	self.SyncData()
     
@@ -206,7 +205,7 @@ class SafeSlingerExchange:
     		retry += 1
     		time.sleep(retry)
     		if retry >= 10:
-    			print "Error: reached maximum retries”
+    			print "Error: reached maximum retries"
     			quit()
     
     
@@ -222,7 +221,7 @@ class SafeSlingerExchange:
     		buffer.extend(self.receivedcipherSet[x])
     	
     	#print 'buffer: ', binascii.hexlify(buffer)
-    	wordhash = CryptoEngine.SHA3Digest(buffer)
+    	wordhash = CryptoEngine.sha3_digest(bytes(buffer))
     	#print 'word hash: ', binascii.hexlify(wordhash)
     	del buffer
     	
@@ -252,7 +251,7 @@ class SafeSlingerExchange:
     		buf = bytearray()
     		buf.append(count)
     		buf.extend(wordhash)
-    		whash = CryptoEngine.SHA3Digest(buf)
+    		whash = CryptoEngine.sha3_digest(bytes(buf))
     		hasharray = bytearray(whash)
     		del buf
     		
@@ -373,13 +372,13 @@ class SafeSlingerExchange:
     					Nmh = struct.unpack("32B", datagram[offset:offset+32])
     					offset += 32
     					# Sha3Nmh
-    					Sha3Nmh = CryptoEngine.SHA3Digest(bytearray(Nmh))
+    					Sha3Nmh = CryptoEngine.sha3_digest(bytes(bytearray(Nmh)))
     					# wH
     					wH = struct.unpack("32B", datagram[offset:offset+32])
     					offset += 32
     					buf = bytearray(Sha3Nmh)
     					buf.extend(wH)
-    					cPC = CryptoEngine.SHA3Digest(buf)
+    					cPC = CryptoEngine.sha3_digest(bytes(buf))
     					del buf
     					rPC = self.protoCommitmentSet[uid]
     					# verify if protocol commitments match
@@ -481,7 +480,7 @@ class SafeSlingerExchange:
     	self.SyncMatch()
     
     def SyncMatch(self):
-    	self.match_nonce = CryptoEngine.AES256EncryptWithKey(bytes(self.match_nonce), self.groupkey)
+    	self.match_nonce = CryptoEngine.aes256_cbc_encryption(bytes(self.match_nonce), self.groupkey)
     	numUsers_Recv = 1
     	del self.uidSet[:]
     	self.uidSet.insert(0, self.userID)
@@ -500,8 +499,8 @@ class SafeSlingerExchange:
     				total_len = (struct.unpack("!i", datagram[offset:offset+4]))[0]
     				offset += 4
     				keyNonce = struct.unpack("%dB" %total_len, datagram[offset:offset+total_len])
-    				keyNonce = CryptoEngine.AES256DecryptWithKey(bytearray(keyNonce), self.groupkey)
-    				nh = CryptoEngine.SHA3Digest(keyNonce)
+    				keyNonce = CryptoEngine.aes256_cbc_decryption(bytearray(keyNonce), self.groupkey)
+    				nh = CryptoEngine.sha3_digest(bytes(keyNonce))
     				meh = self.matchExtraHashSet[uid]
     				if nh == bytearray(meh):
     					self.matchNonceSet[uid] = keyNonce
@@ -513,7 +512,7 @@ class SafeSlingerExchange:
     		retry += 1
     		time.sleep(retry)
     		if retry >= 10:
-    			print "Error: reached maximum retries”
+    			print "Error: reached maximum retries"
     			quit()
     
     
@@ -522,7 +521,7 @@ class SafeSlingerExchange:
     	_decrypted = {}
     	for x in self.uidSet:
     		if x == self.userID: continue
-    		individualData = CryptoEngine.AES256DecryptWithKey(bytearray(self.receivedcipherSet[x]), bytearray(self.matchNonceSet[x]))
+    		individualData = CryptoEngine.aes256_cbc_decryption(bytearray(self.receivedcipherSet[x]), bytearray(self.matchNonceSet[x]))
     		_decrypted[x] = individualData
     	return _decrypted
     

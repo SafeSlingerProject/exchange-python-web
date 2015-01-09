@@ -27,11 +27,11 @@ proto = SafeSlingerExchange()
 
 while True:
     try:
-        exchange_data = str(raw_input("Enter a Secret you want to exchange with people in the group: "))
+        exchange_data = str(raw_input('Enter a Secret you want to exchange with people in the group: '))
         if len(exchange_data) > 0: 
-        	break
+            break
         else:
-        	print 'The exchange is missing required data.'
+            print 'The exchange is missing required data.'
     except Exception:
     	print 'The exchange is missing required data.'
     
