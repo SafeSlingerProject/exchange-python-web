@@ -1,28 +1,34 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2010-2015 Carnegie Mellon University
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+"""
+The MIT License (MIT)
 
-import os, struct, binascii, random, sys, time
+Copyright (c) 2010-2015 Carnegie Mellon University
 
-from bitarray import bitarray
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
+
+import os
+import struct
+import binascii
+import random
+import sys
+import time
+
 from cryptoutil import CryptoEngine
 from httpsclient import HTTPClient
 from dh import DiffieHellman
@@ -227,14 +233,12 @@ class SafeSlingerExchange:
     	
     	# generate 3-word phrases
     	hashint = [0, 0, 0, 0, 0, 0]
-    	# create empty bitarray
-    	evenVec = bitarray(256)
-    	oddVec = bitarray(256)
-    	evenVec.setall(False)
-    	oddVec.setall(False)
-    	evenVec[ord(wordhash[0])] = True
-    	oddVec[ord(wordhash[1])] = True
-    	evenVec[ord(wordhash[2])] = True
+    	# create empty byte array
+    	evenVec = bytearray(256)
+    	oddVec = bytearray(256)
+    	evenVec[ord(wordhash[0])] = 1 # set to True
+    	oddVec[ord(wordhash[1])] = 1
+    	evenVec[ord(wordhash[2])] = 1
     	
     	# essentially need to sort list of user ids first
     	# generate wordlist for every user id up to ours
@@ -257,19 +261,19 @@ class SafeSlingerExchange:
     		
     		# 2 decoy wordlists for each user
     		for d in range(2):
-    			while evenVec[hasharray[0 + 3*d]] == True:
+    			while evenVec[hasharray[0 + 3*d]] == 1:
     				if hasharray[0 + 3*d] == 255: hasharray[0 + 3*d] = hasharray[0 + 3*d] - 255
     				else: hasharray[0 + 3*d] = hasharray[0 + 3*d] + 1
-    			while oddVec[hasharray[1 + 3*d]] == True:
+    			while oddVec[hasharray[1 + 3*d]] == 1:
     				if hasharray[1 + 3*d] == 255: hasharray[1 + 3*d] = hasharray[1 + 3*d] - 255
     				else: hasharray[1 + 3*d] = hasharray[1 + 3*d] + 1
-    			while evenVec[hasharray[2+ 3*d]] == True:
+    			while evenVec[hasharray[2+ 3*d]] == 1:
     				if hasharray[2 + 3*d] == 255: hasharray[2 + 3*d] = hasharray[2 + 3*d] - 255
     				else: hasharray[2 + 3*d] = hasharray[2 + 3*d] + 1
     			#print 'modified hasharray hash: ', binascii.hexlify(hasharray), 'len:', len(hasharray)
-    			evenVec[hasharray[0+3*d]] = True
-    			oddVec[hasharray[1+3*d]] = True
-    			evenVec[hasharray[2+3*d]] = True     
+    			evenVec[hasharray[0+3*d]] = 1
+    			oddVec[hasharray[1+3*d]] = 1
+    			evenVec[hasharray[2+3*d]] = 1     
     			# compute decoy strings only if user is found
     			if (d == 0) and (foundUser == True):
     				hashint[0] = hasharray[0]
