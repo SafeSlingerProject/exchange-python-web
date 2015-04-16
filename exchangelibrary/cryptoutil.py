@@ -147,14 +147,12 @@ class CryptoEngine:
 	@staticmethod
 	def aes256_cbc_encryption(data, nonce): 
 	    # enckey = sha3('1'||nonce)
-	    skey = '1'
-	    keyarray = struct.pack('1s%dB' % len(nonce), skey, *nonce)
-	    enckey = CryptoEngine.sha3_digest(keyarray)
+	    skey = '1' + nonce
+	    enckey = CryptoEngine.sha3_digest(skey)
 	    
 	    # iv = sha3('2'||nonce)
-	    skey = '2'
-	    iv = struct.pack('1s%dB' % len(nonce), skey, *nonce)
-	    iv = CryptoEngine.sha3_digest(iv)[:16]
+	    skey = '2' + nonce
+	    iv = CryptoEngine.sha3_digest(skey)[:16]
 	    
 	    # PCKS#7 padding
 	    l = len(data)
@@ -172,16 +170,12 @@ class CryptoEngine:
 	@staticmethod
 	def aes256_cbc_decryption(data, nonce): # static method for cipher wrapper
 		# deckey = sha3('1'||nonce)
-		skey = '1'
-		keyarray = struct.pack('1s%dB' % len(nonce), skey, *nonce)
-		deckey = CryptoEngine.sha3_digest(keyarray)
-		#print 'deckey: ', binascii.hexlify(deckey), 'len:', len(deckey)
+		skey = '1' + nonce
+		deckey = CryptoEngine.sha3_digest(skey)
 		
 		# iv = sha3('2'||nonce)
-		skey = '2'
-		iv = struct.pack('1s%dB' % len(nonce), skey, *nonce)
-		iv = CryptoEngine.sha3_digest(iv)[:16]
-		#print 'iv: ', binascii.hexlify(iv), 'len:', len(iv)
+		skey = '2' + nonce
+		iv = CryptoEngine.sha3_digest(skey)[:16]
 		
 		# AES CBC Cipher
 		roundkey = get_roundkey_cache(bytearray(deckey))

@@ -34,7 +34,10 @@ from httpsclient import HTTPClient
 from dh import DiffieHellman
 
 class SafeSlingerExchange:
-    
+    # constants
+    MINI_USERS = 2
+    NONCE_LEN = 32
+
     def __init__(self, address="slinger-dev.appspot.com"):
         # networking object
         self.version = 1 << 24 | 8 << 16
@@ -86,43 +89,34 @@ class SafeSlingerExchange:
     				self.num_users = numUsers
     				break
     			else:
-    				print "A minimum of %d members are required to exchange data." % 2
+    				print "A minimum of %d members are required to exchange data." % SafeSlingerExchange.MINI_USERS
     		except Exception:
-    			print "A minimum of %d members are required to exchange data." % 2
+    			print "A minimum of %d members are required to exchange data." % SafeSlingerExchange.MINI_USERS
     
     def BeginExchange(self, data):
-    	self.match_nonce = bytearray(os.urandom(32))
-    	self.wrong_nonce = bytearray(os.urandom(32))
+    	self.match_nonce = os.urandom(SafeSlingerExchange.NONCE_LEN)
+    	self.wrong_nonce = os.urandom(SafeSlingerExchange.NONCE_LEN)
     	# match_extrahash = sha3(match_nonce)
-    	self.match_extrahash = CryptoEngine.sha3_digest(bytes(self.match_nonce))
+    	self.match_extrahash = CryptoEngine.sha3_digest(self.match_nonce)
     	# wrong_hash = sha3(wrong_nonce)
-    	self.wrong_hash = CryptoEngine.sha3_digest(bytes(self.wrong_nonce))
+    	self.wrong_hash = CryptoEngine.sha3_digest(self.wrong_nonce)
     	# match_hash = sha3(match_extrahash)
-    	self.match_hash = CryptoEngine.sha3_digest(bytes(self.match_extrahash))
-    	# encrypted_data = AES(enckey, exchange_data)
+    	self.match_hash = CryptoEngine.sha3_digest(self.match_extrahash)
+    	# encrypted_data = aes_cbc(enckey, exchange_data)
     	self.encrypted_data = CryptoEngine.aes256_cbc_encryption(data, self.match_nonce)
     	#compute protocol_commitment = sha3(match_hash||wrong_hash)
-    	buffer = bytearray(self.match_hash)
-    	buffer.extend(self.wrong_hash)
-    	self.protocol_commitment = CryptoEngine.sha3_digest(bytes(buffer))
-    	# print "protocol_commitment = ", binascii.hexlify(protocol_commitment), "len = ", len(protocol_commitment)
-    	del buffer
+    	self.protocol_commitment = CryptoEngine.sha3_digest(self.match_hash + self.wrong_hash)
     	# generate Diffie Hellman Key
     	self.dhkey = DiffieHellman()
     	self.dhpubkey = self.dhkey.getHexData(self.dhkey.publicKey).strip()
     	self.dhkey_len = len(self.dhpubkey)
     	# data_commitment = sha3(protocol_commitment||DHPubKey||encrypted_data)
-    	buffer = bytearray(self.protocol_commitment)
-    	buffer.extend(self.dhpubkey)
-    	buffer.extend(self.encrypted_data)
-    	self.data_commitment = CryptoEngine.sha3_digest(bytes(buffer))
-    	# print "data_commitment = ", binascii.hexlify(data_commitment), "len = ", len(data_commitment)
-    	del buffer
+    	self.data_commitment = CryptoEngine.sha3_digest(self.protocol_commitment+self.dhpubkey+self.encrypted_data)
     	# initialize network object
     	self.httpclient = HTTPClient(self.address)
     
     def AssignUser(self):
-    	datagram = self.httpclient.assignUser(bytearray(self.data_commitment))
+    	datagram = self.httpclient.assign_user(self.data_commitment)
     	userID = (struct.unpack("!i", datagram[0:4]))[0]
     	self.userID = userID
     	# store parameters
@@ -130,11 +124,7 @@ class SafeSlingerExchange:
     	self.protoCommitmentSet[userID] = self.protocol_commitment
     	self.dhpubkeySet[userID] = self.dhpubkey
     	self.receivedcipherSet[userID] = self.encrypted_data
-    	#print "dC = ", binascii.hexlify(self.dataCommitmentSet[userID])
-    	#print "pC = ", binascii.hexlify(self.protoCommitmentSet[userID])
-    	#print "dhpub = ", binascii.hexlify(self.dhpubkeySet[userID])
-    	#print "cipher = ", binascii.hexlify(self.receivedcipherSet[userID])
-    	print ("Assigned ID = %d.\n\nThis number is used to create a unique group of users. Compare, and then enter the lowest number." %self.userID )
+    	print ("Assigned ID = %d.\n\nThis number is used to create a unique group of users. Compare, and then enter the lowest number." % self.userID )
     
     def SelectLowestNumber(self):
     	low_num = -1
@@ -148,13 +138,16 @@ class SafeSlingerExchange:
     		except Exception:
     			print 'Please enter a positive integer.'
     	
-    	print "%d users, Lowest %d\nRequesting membership..." % (self.num_users, low_num)
+    	print "%d users, Lowest %d\nRequesting Membership..." % (self.num_users, low_num)
     	numUsers_Recv = 1
     	self.uidSet[:] = []
     	self.uidSet.insert(0, self.userID)
     	retry = 0
     	while (numUsers_Recv < self.num_users):
-    		datagram = self.httpclient.sendMinID(self.userID,low_num,self.uidSet,bytearray(self.data_commitment))
+    		datagram = self.httpclient.send_minid(self.userID, 
+    		                                      low_num, 
+    		                                      self.uidSet, 
+    		                                      self.data_commitment)
     		minVersion = (struct.unpack("!i", datagram[0:4]))[0]
     		count = (struct.unpack("!i", datagram[4:8]))[0]
     		delta_count = (struct.unpack("!i", datagram[8:12]))[0]
@@ -185,7 +178,11 @@ class SafeSlingerExchange:
     	self.uidSet.insert(0, self.userID)
     	retry = 0
     	while (numUsers_Recv < self.num_users):
-    		datagram = self.httpclient.SyncData(self.userID,bytearray(self.protocol_commitment),bytearray(self.dhpubkey),self.uidSet,bytearray(self.encrypted_data))
+    		datagram = self.httpclient.sync_data(self.userID,
+    		                                    self.uidSet,
+    		                                    self.protocol_commitment,
+    		                                    self.dhpubkey,
+    		                                    self.encrypted_data)
     		count = (struct.unpack("!i", datagram[0:4]))[0]
     		delta_count = (struct.unpack("!i", datagram[4:8]))[0]
     		# Collect all data commitments Ci from other users
@@ -197,13 +194,13 @@ class SafeSlingerExchange:
     				offset += 4 # proto commitment
     				total_len = (struct.unpack("!i", datagram[offset:offset+4]))[0]
     				offset += 4
-    				self.protoCommitmentSet[uid] = struct.unpack("32B", datagram[offset:offset+32])
-    				offset += 32
+    				self.protoCommitmentSet[uid] = struct.unpack("%dB" % SafeSlingerExchange.NONCE_LEN, datagram[offset:offset+SafeSlingerExchange.NONCE_LEN])
+    				offset += SafeSlingerExchange.NONCE_LEN
     				#dhkey
     				self.dhpubkeySet[uid]  = struct.unpack("%dB" % self.dhkey_len, datagram[offset:offset+self.dhkey_len])
     				offset += self.dhkey_len
     				# encrypted_dataSet
-    				encrypted_len = total_len-32-self.dhkey_len
+    				encrypted_len = total_len-SafeSlingerExchange.NONCE_LEN-self.dhkey_len
     				self.receivedcipherSet[uid] = struct.unpack("%dB" % encrypted_len, datagram[offset:offset+encrypted_len])
     				offset += encrypted_len
     				numUsers_Recv += 1
@@ -358,7 +355,10 @@ class SafeSlingerExchange:
     		del self.uidSet[:]
     		self.uidSet.insert(0, self.userID)
     		while (numUsers_Recv < self.num_users):
-    			datagram = self.httpclient.SyncSignatures(self.userID,self.uidSet,bytearray(self.match_extrahash),bytearray(self.wrong_hash)) 
+    			datagram = self.httpclient.sync_signatures(self.userID,
+    			                                           self.uidSet,
+    			                                           self.match_extrahash,
+    			                                           self.wrong_hash)
     			# match_extrahash || wrong_hash
     			count = (struct.unpack("!i", datagram[0:4]))[0]
     			delta_count = (struct.unpack("!i", datagram[4:8]))[0]
@@ -373,13 +373,13 @@ class SafeSlingerExchange:
     					total_len = (struct.unpack("!i", datagram[offset:offset+4]))[0]
     					offset += 4
     					# Nmh
-    					Nmh = struct.unpack("32B", datagram[offset:offset+32])
-    					offset += 32
+    					Nmh = struct.unpack("%dB" % SafeSlingerExchange.NONCE_LEN, datagram[offset:offset+SafeSlingerExchange.NONCE_LEN])
+    					offset += SafeSlingerExchange.NONCE_LEN
     					# Sha3Nmh
     					Sha3Nmh = CryptoEngine.sha3_digest(bytes(bytearray(Nmh)))
     					# wH
-    					wH = struct.unpack("32B", datagram[offset:offset+32])
-    					offset += 32
+    					wH = struct.unpack("%dB" % SafeSlingerExchange.NONCE_LEN, datagram[offset:offset+SafeSlingerExchange.NONCE_LEN])
+    					offset += SafeSlingerExchange.NONCE_LEN
     					buf = bytearray(Sha3Nmh)
     					buf.extend(wH)
     					cPC = CryptoEngine.sha3_digest(bytes(buf))
@@ -398,7 +398,10 @@ class SafeSlingerExchange:
     					numUsers_Recv += 1
     		return True
     	else:
-    		ret = self.httpclient.SyncSignatures(self.userID,self.uidSet,bytearray(self.match_hash),self.wrong_nonce)
+    		ret = self.httpclient.sync_signatures(self.userID,
+    		                                      self.uidSet,
+    		                                      self.match_hash,
+    		                                      self.wrong_nonce)
     		return False
     		
     def handleSyncKeyNodes(self, datagram):
@@ -419,7 +422,7 @@ class SafeSlingerExchange:
     			self.keyNodes[position] = bytearray(keyNodeData)
     			self.GroupDHComputation()
     		else:
-    			datagram = self.httpclient.SyncKeyNodes(self.userID)
+    			datagram = self.httpclient.sync_keynodes(self.userID)
     			self.handleSyncKeyNodes(datagram)
     
     def GroupDHComputation(self):
@@ -445,7 +448,7 @@ class SafeSlingerExchange:
     		try:
     			elem = self.keyNodes[position]
     		except KeyError:
-    			datagram = self.httpclient.SyncKeyNodes(self.userID)
+    			datagram = self.httpclient.sync_keynodes(self.userID)
     			self.handleSyncKeyNodes(datagram)
     			return
     		currentKeyNodeNumber = position+1
@@ -472,25 +475,29 @@ class SafeSlingerExchange:
     			expKeyNode = pow(currentKeynode.generator, currentKeynode.privateKey, currentKeynode.prime)
     			hex_string = hex(expKeyNode)
     			expKeyNodeRaw = hex_string[2:-1].decode("hex")
-    			datagram = self.httpclient.SyncRequestKeyNodes(self.userID, self.uidSet[currentKeyNodeNumber],len(expKeyNodeRaw), bytearray(expKeyNodeRaw))
+    			datagram = self.httpclient.sync_requestkeynodes(self.userID, 
+    			                                                self.uidSet[currentKeyNodeNumber],
+    			                                                expKeyNodeRaw)
     		
     		currentKeyNodeNumber += 1
     	
     	# compute group DH key
     	hex_string = hex(sharedKey).strip()
     	#print "sharedKey: %s" % hex_string[2:-1]
-    	self.groupkey = bytearray(hex_string[2:-1].decode("hex"))
+    	self.groupkey = hex_string[2:-1].decode("hex")
     	del sharedKey
     	self.SyncMatch()
     
     def SyncMatch(self):
-    	self.match_nonce = CryptoEngine.aes256_cbc_encryption(bytes(self.match_nonce), self.groupkey)
+    	self.match_nonce = CryptoEngine.aes256_cbc_encryption(self.match_nonce, self.groupkey)
     	numUsers_Recv = 1
     	del self.uidSet[:]
     	self.uidSet.insert(0, self.userID)
     	retry = 0
     	while (numUsers_Recv < self.num_users):
-    		datagram = self.httpclient.SyncMatch(self.userID,self.uidSet,bytearray(self.match_nonce))
+    		datagram = self.httpclient.sync_match(self.userID,
+    		                                      self.uidSet,
+    		                                      self.match_nonce)
     		count = (struct.unpack("!i", datagram[0:4]))[0]
     		delta_count = (struct.unpack("!i", datagram[4:8]))[0]
     		# Collect all data commitments Ci from other users
@@ -502,8 +509,8 @@ class SafeSlingerExchange:
     				offset += 4
     				total_len = (struct.unpack("!i", datagram[offset:offset+4]))[0]
     				offset += 4
-    				keyNonce = struct.unpack("%dB" %total_len, datagram[offset:offset+total_len])
-    				keyNonce = CryptoEngine.aes256_cbc_decryption(bytearray(keyNonce), self.groupkey)
+    				keyNonce = struct.unpack("%dB" % total_len, datagram[offset:offset+total_len])
+    				keyNonce = CryptoEngine.aes256_cbc_decryption(keyNonce, self.groupkey)
     				nh = CryptoEngine.sha3_digest(bytes(keyNonce))
     				meh = self.matchExtraHashSet[uid]
     				if nh == bytearray(meh):
@@ -525,7 +532,7 @@ class SafeSlingerExchange:
     	_decrypted = {}
     	for x in self.uidSet:
     		if x == self.userID: continue
-    		individualData = CryptoEngine.aes256_cbc_decryption(bytearray(self.receivedcipherSet[x]), bytearray(self.matchNonceSet[x]))
+    		individualData = CryptoEngine.aes256_cbc_decryption(self.receivedcipherSet[x], self.matchNonceSet[x])
     		_decrypted[x] = individualData
     	return _decrypted
     

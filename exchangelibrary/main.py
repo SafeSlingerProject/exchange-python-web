@@ -37,7 +37,7 @@ while True:
     except Exception:
     	print 'The exchange is missing required data.'
     
-print 'My Secret to exchange: %s' % exchange_data	
+print 'My Secret for exchange: %s' % exchange_data	
 
 # select group size
 proto.SelecGroupSize()
@@ -55,8 +55,9 @@ ret = proto.PhrasesVerification()
 if ret == True: 
 	proto.GroupDHComputation()
 	_decrypted = proto.ObtainGatherData()
-	print "\n\n"
+	print "\n"
 	print "---------------Exchange Result---------------"
+	print "Your data: %s" % exchange_data
 	for x in _decrypted.keys():
 		print "User (%d)'s data: %s" % (x, _decrypted[x])
 	print "---------------------------------------------"
