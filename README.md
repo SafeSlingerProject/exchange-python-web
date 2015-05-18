@@ -1,27 +1,20 @@
 [![Build Status](https://travis-ci.org/SafeSlingerProject/exchange-python-web.png?branch=master)](https://travis-ci.org/SafeSlingerProject/exchange-python-web)
 
-SafeSlinger Python Client
-===================
-The open source SafeSlinger Exchange library is a secure and easy to use method of exchanging public keys or other authentication data, with strong protection from Man-In-The-Middle (MITM) attacks. Our goal is to make exchanging public keys as simple as possible without sacrificing security. Our [research paper](http://sparrow.ece.cmu.edu/group/pub/farb_safeslinger_mobicom2013.pdf), presented at MobiCom '13, provides a technical analysis of SafeSlinger's key exchange properties.
+Quick Links:
+[Downloads](https://github.com/SafeSlingerProject/SafeSlinger-Media/wiki/Platforms),
+[Wiki](https://github.com/SafeSlingerProject/SafeSlinger-Media/wiki),
+[Support, Translations, Contributing](https://github.com/SafeSlingerProject/SafeSlinger-Media/wiki/Contributing),
+[Research Paper](http://sparrow.ece.cmu.edu/group/pub/farb_safeslinger_mobicom2013.pdf),
+[Project Website](http://www.cylab.cmu.edu/safeslinger)
 
-Library Features:
-
-- Open source makes security audits easy.
-- The only secure simultaneous key exchange for up to 10 people.
-- Easy to implement and use.
-- Cross-platform between mobile devices (Android and iOS) and laptop machines (Python).
-- Protection from Man-In-The-Middle attacks during key exchanges.
-- Exchange keys either in person or remote.
-
-The SafeSlinger secure key exchange is implemented cross-platform for [Android](http://github.com/SafeSlingerProject/SafeSlinger-Android) and [iOS](http://github.com/SafeSlingerProject/SafeSlinger-iOS) devices. Keys are exchanged using a simple server implementation on [App Engine](http://github.com/SafeSlingerProject/SafeSlinger-AppEngine).
-
-Repository Python Projects
+SafeSlinger Python Client Projects
 =======
+This is a simple implementation for a command line python script to run the SafeSlinger exchange.  
 
-- **/exchangelibrary** contains the library project you can add to your own python applications. 
+- **/exchangelibrary** Contains the library project you can add to your own python applications. 
 
 
-Requirement:
+Requirements:
 ========
 
 The python exchange program currently runs for python 2.x now.
@@ -34,19 +27,11 @@ Simply execute **python main.py** in **/exchangelibrary** folder. The program wi
 Mobile devices can install SafeSlinger Exchange Developer's App on either [Android](http://play.google.com/store/apps/details?id=edu.cmu.cylab.starslinger.demo) or [iOS](https://itunes.apple.com/app/safeslinger-exchange-for-developers/id909442873) to perform secret exchange with python clients.
 
 
-Todo:
+TODO:
 ========
 
 1. Support python 3.x.
 2. Design customized UI for laptop environment.
-
-Contact
-=======
-
-* SafeSlinger [Project Website](http://www.cylab.cmu.edu/safeslinger)
-* Please submit [Bug Reports](http://github.com/SafeSlingerProject/exchange-python-web//issues)!
-* Looking for answers, try our [FAQ](http://www.cylab.cmu.edu/safeslinger/faq.html)!
-* Support: <safeslingerapp@gmail.com>
 
 License
 =======
